@@ -22,7 +22,6 @@ CAPS = [
     (6.3, 8.2, f"АЯНТЫ — {C}6 236 КМ²,{R}"),
     (8.2, 10.3, f"ТЕРЕҢДИГИ — {C}668 МЕТР.{R}"),
     (10.4, 12.7, f"АНДА {C}1 738 КМ³{R} СУУ БАР."),
-    (12.7, 14.9, "ДҮЙНӨДӨГҮ ЭҢ ТЕРЕҢ КӨЛДӨРДҮН БИРИ."),
     (15.3, 17.4, f"КӨЛГӨ {C}118 ДАРЫЯ-СУУ{R} АГАТ,"),
     (17.4, 19.5, f"БИРОК {Y}БИРӨӨ ДА{R} АГЫП ЧЫКПАЙТ."),
     (19.6, 22.8, f"СУУ {C}БУУЛАНЫП{R} ГАНА КЕТЕТ."),
@@ -38,7 +37,7 @@ CAPS = [
     (45.6, 48.4, f"АНСЫЗ КЫШ {C}СУУГУРААК,{R} ЖАЙ {Y}ЫСЫГЫРААК.{R}"),
     (48.4, 51.8, f"{C}БАЛЫКТАР{R} ЖАНА КЫШТАГАН {C}КУШТАР{R} ЖОГОЛОТ."),
     (52.3, 54.0, f"БИРОК АЗЫРЫНЧА {Y}КЕЧ ЭМЕС:{R}"),
-    (54.0, 56.6, f"{C}СУУНУ ҮНӨМДӨСӨК,{R} КӨЛДҮ САКТАЙБЫЗ."),
+    (54.0, 56.6, f"{C}СУУНУ ҮНӨМДӨСӨК,{R} КӨЛДҮ САКТАП КАЛАБЫЗ."),
     (56.6, 59.8, f"КИЙИНКИ ТЕМАНЫ {Y}КОММЕНТАРИЙГЕ{R} ЖАЗ!"),
 ]
 
@@ -63,7 +62,34 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 """
 POP = r"{\pos(540,1505)\fscx82\fscy82\t(0,110,\fscx106\fscy106)\t(110,190,\fscx100\fscy100)}"
 
+def retime(caps):
+    """Snap captions to the real voiceover: chunks inside each scene get times proportional to their length."""
+    import re, subprocess
+    starts = [v[0] for v in VO] + [60.0]
+    out = []
+    for si in range(len(VO)):
+        f = os.path.join(ROOT, "vo", f"vo{si + 1}.mp3")
+        if not os.path.exists(f):
+            return caps
+        dur = float(subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", f],
+                                   capture_output=True, text=True).stdout)
+        chunks = [c for c in caps if starts[si] - 0.5 <= c[0] < starts[si + 1] - 0.5]
+        plain = lambda x: re.sub(r"\{[^}]*\}", "", x)
+        lens = [len(plain(c[2])) for c in chunks]
+        lead = 0
+        if si == 0:  # hook question is shown as the big title, captions start with its 2nd sentence
+            lead = len("ЫСЫК-КӨЛ ТОЛУГУ МЕНЕН СООЛУП КАЛСА ЭМНЕ БОЛОТ? ")
+        total = lead + sum(lens)
+        t = starts[si] + dur * lead / total
+        for c, n in zip(chunks, lens):
+            e = t + dur * n / total
+            out.append((round(t, 2), round(e + 0.25 if c is chunks[-1] else e, 2), c[2]))
+            t = e
+    return out
+
+
 if __name__ == "__main__":
+    CAPS = retime(CAPS)
     os.makedirs(os.path.join(ROOT, "build"), exist_ok=True)
     with open(os.path.join(ROOT, "build", "subs.ass"), "w", encoding="utf-8") as f:
         f.write(HEAD + "\n".join(f"Dialogue: 0,{ts(a)},{ts(b)},Cap,,0,0,0,,{POP}{x}" for a, b, x in CAPS) + "\n")
