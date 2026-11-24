@@ -78,8 +78,8 @@ const fmt = n => Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 // each scene: [start, end, drawFn]
 const scenes = [
   // 1. HOOK
-  [0, 5.2, t => {
-    cover(img('i1'), 0, 5.2, t, 1.25, 1.08);
+  [0, 4.4, t => {
+    cover(img('i1'), 0, 4.4, t, 1.25, 1.08);
     shade(1, 0.55, 0.85);
     const k = back(prog(t, 0.2, 0.7));
     metroLogo(540, 560, 110, k);
@@ -93,8 +93,8 @@ const scenes = [
     ctx.fillStyle = GOLD; ctx.fillRect(540 - 230 * u, 1350, 460 * u, 8);
   }],
   // 2. NEIGHBOURS / HISTORY
-  [5.2, 12.2, t => {
-    const tt = t - 5.2;
+  [4.4, 15.4, t => {
+    const tt = t - 4.4;
     const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#0E1530'); g.addColorStop(1, '#05070F');
     ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
     rise(tt, 0.1, 'КОШУНАЛАРДА', 90, 420, 52, GOLD, 800);
@@ -106,10 +106,10 @@ const scenes = [
       ['???', 'Бишкек', 'азырынча жок', RED, false],
     ];
     const x0 = 170, y0 = 700, step = 300;
-    const lineK = easeIO(prog(tt, 0.6, 2.2));
+    const lineK = easeIO(prog(tt, 0.6, 4.2));
     ctx.fillStyle = 'rgba(255,255,255,.18)'; ctx.fillRect(x0 - 4, y0, 8, step * 2 * lineK);
     items.forEach(([yr, city, note, col, ok], i) => {
-      const s = 0.8 + i * 0.9; const k = prog(tt, s, 0.5);
+      const s = [0.6, 2.4, 4.6][i]; const k = prog(tt, s, 0.5);
       if (k <= 0) return;
       const y = y0 + i * step;
       ctx.save(); ctx.globalAlpha = k;
@@ -123,7 +123,7 @@ const scenes = [
       rise(tt, s + .3, note, x0 + 80, y + 104, 38, 'rgba(255,255,255,.65)', 500);
     });
     // fact card
-    const ck = easeOut(prog(tt, 4.0, 0.6));
+    const ck = easeOut(prog(tt, 5.8, 0.6));
     if (ck > 0) {
       card(70, 1440 + (1 - ck) * 60, 940, 200, ck);
       ctx.save(); ctx.globalAlpha = ck;
@@ -133,17 +133,17 @@ const scenes = [
     }
   }],
   // 3. PROBLEM
-  [12.2, 21.5, t => {
-    const tt = t - 12.2;
-    cover(img('i2'), 12.2, 21.5, t, 1.1, 1.22, 60, 0);
+  [15.4, 24.8, t => {
+    const tt = t - 15.4;
+    cover(img('i2'), 15.4, 24.8, t, 1.1, 1.22, 60, 0);
     shade(1, 0.7, 0.92);
     pill(90, 330, 'КӨЙГӨЙ', RED, 34, easeOut(prog(tt, .1)));
     rise(tt, 0.3, 'Бишкек тыгылып', 90, 520, 84, '#fff', 900);
     rise(tt, 0.5, 'калды', 90, 615, 84, '#fff', 900);
     const stats = [
-      [0.9, 1.2, ' млн+', 'Бишкектин калкы', v => (v).toFixed(1).replace('.', ','), GOLD],
-      [2.3, 1.5, ' саат', 'күнүнө жолдо (орточо)', v => (v).toFixed(1).replace('.', ','), '#fff'],
-      [3.7, 0, '', 'кышында смог — дүйнөдөгү эң булганган шаарлардын катарында', null, RED],
+      [0.6, 1.2, ' млн+', 'Бишкектин калкы', v => (v).toFixed(1).replace('.', ','), GOLD],
+      [3.6, 1.5, ' саат', 'күнүнө жолдо (орточо)', v => (v).toFixed(1).replace('.', ','), '#fff'],
+      [6.2, 0, '', 'кышында смог — дүйнөдөгү эң булганган шаарлардын катарында', null, RED],
     ];
     stats.forEach(([s, val, unit, lbl, f, col], i) => {
       const k = easeOut(prog(tt, s, 0.6)); if (k <= 0) return;
@@ -169,8 +169,8 @@ const scenes = [
     });
   }],
   // 4. MAP
-  [21.5, 33.5, t => {
-    const tt = t - 21.5;
+  [24.8, 33.8, t => {
+    const tt = t - 24.8;
     ctx.fillStyle = '#F4F1EA'; ctx.fillRect(0, 0, W, H);
     // grid streets
     ctx.strokeStyle = 'rgba(0,0,0,.06)'; ctx.lineWidth = 3;
@@ -264,9 +264,9 @@ const scenes = [
     }
   }],
   // 5. BENEFITS
-  [33.5, 47.5, t => {
-    const tt = t - 33.5;
-    cover(img('i3'), 33.5, 47.5, t, 1.08, 1.25);
+  [33.8, 46.5, t => {
+    const tt = t - 33.8;
+    cover(img('i3'), 33.8, 46.5, t, 1.08, 1.25);
     ctx.fillStyle = 'rgba(5,8,16,.78)'; ctx.fillRect(0, 0, W, H);
     pill(90, 300, 'ЭМНЕ БОЛМОК?', GREEN, 34, easeOut(prog(tt, .1)));
     // big time compare
@@ -295,7 +295,7 @@ const scenes = [
       ['Шаар өсөт', 'станциялардын айланасы жанданат', RED],
     ];
     chips.forEach(([a, b, col], i) => {
-      const s = 6.2 + i * 1.2, ck = easeOut(prog(tt, s, 0.5)); if (ck <= 0) return;
+      const s = 4.6 + i * 1.5, ck = easeOut(prog(tt, s, 0.5)); if (ck <= 0) return;
       const x = 70 + (i % 2) * 480, y = 1290 + Math.floor(i / 2) * 230 + (1 - ck) * 40;
       card(x, y, 460, 205, ck);
       ctx.save(); ctx.globalAlpha = ck;
@@ -308,9 +308,9 @@ const scenes = [
     });
   }],
   // 6. COST
-  [47.5, 54.5, t => {
-    const tt = t - 47.5;
-    cover(img('i5'), 47.5, 54.5, t, 1.2, 1.05);
+  [46.5, 52.8, t => {
+    const tt = t - 46.5;
+    cover(img('i5'), 46.5, 52.8, t, 1.2, 1.05);
     shade(1, 0.8, 0.92);
     pill(90, 330, 'БААСЫ КАНЧА?', GOLD, 34, easeOut(prog(tt, .1)));
     rise(tt, 0.3, '1 км метро', 90, 540, 64, '#fff', 800);
@@ -335,9 +335,9 @@ const scenes = [
     rise(tt, 4.6, '*дүйнөлүк тажрыйба боюнча болжолдуу эсеп', 90, 1360, 30, 'rgba(255,255,255,.55)', 500);
   }],
   // 7. CTA
-  [54.5, 60.5, t => {
-    const tt = t - 54.5;
-    cover(img('i4'), 54.5, 60.5, t, 1.05, 1.15, 0, -60);
+  [52.8, 60.5, t => {
+    const tt = t - 52.8;
+    cover(img('i4'), 52.8, 60.5, t, 1.05, 1.15, 0, -60);
     shade(1, 0.6, 0.88);
     metroLogo(540, 520, 85, back(prog(tt, .1, .6)));
     rise(tt, 0.4, 'Бишкекке метро', 540, 760, 84, '#fff', 900, 'center');
