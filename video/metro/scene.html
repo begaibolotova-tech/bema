@@ -1,0 +1,401 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>html,body{margin:0;background:#000}canvas{display:block}img{display:none}</style>
+</head><body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<img id="i1" src="img/1.jpg"><img id="i2" src="img/2.jpg"><img id="i3" src="img/3.jpg">
+<img id="i4" src="img/4.jpg"><img id="i5" src="img/5.jpg">
+<script>
+const c = document.getElementById('c');
+const ctx = c.getContext('2d');
+const W = 1080, H = 1920, DUR = 60;
+const F = 'Inter, sans-serif';
+const RED = '#E8202A', BLUE = '#1E88FF', GOLD = '#FFC531', GREEN = '#2BD98A', INK = '#0B0F1A';
+
+// ---------- helpers ----------
+const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
+const easeOut = x => 1 - Math.pow(1 - x, 3);
+const easeIO = x => x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+const back = x => { const s = 1.70158; return 1 + (s + 1) * Math.pow(x - 1, 3) + s * Math.pow(x - 1, 2); };
+const prog = (t, a, d = 0.6) => clamp((t - a) / d);
+const lerp = (a, b, k) => a + (b - a) * k;
+const img = id => document.getElementById(id);
+
+function rrect(x, y, w, h, r) {
+  ctx.beginPath(); ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
+}
+function text(s, x, y, size, color = '#fff', weight = 800, align = 'left', alpha = 1) {
+  ctx.save(); ctx.globalAlpha *= alpha;
+  ctx.font = `${weight} ${size}px ${F}`; ctx.fillStyle = color; ctx.textAlign = align; ctx.textBaseline = 'alphabetic';
+  ctx.fillText(s, x, y); ctx.restore();
+}
+function textW(s, size, weight = 800) { ctx.font = `${weight} ${size}px ${F}`; return ctx.measureText(s).width; }
+// text sliding up + fade in
+function rise(t, start, s, x, y, size, color, weight, align = 'left') {
+  const k = easeOut(prog(t, start, 0.5));
+  if (k <= 0) return;
+  text(s, x, y + (1 - k) * 40, size, color, weight, align, k);
+}
+// image cover with ken burns
+function cover(im, t0, t1, t, zoomFrom = 1.05, zoomTo = 1.18, panX = 0, panY = 0) {
+  if (!im.complete || !im.naturalWidth) { ctx.fillStyle = '#123'; ctx.fillRect(0, 0, W, H); return; }
+  const k = clamp((t - t0) / (t1 - t0));
+  const z = lerp(zoomFrom, zoomTo, k);
+  const s = Math.max(W / im.naturalWidth, H / im.naturalHeight) * z;
+  const w = im.naturalWidth * s, h = im.naturalHeight * s;
+  ctx.drawImage(im, (W - w) / 2 + panX * (k - .5), (H - h) / 2 + panY * (k - .5), w, h);
+}
+function shade(a, top = 0.75, bottom = 0.9) {
+  const g = ctx.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0, `rgba(5,8,16,${top * a})`); g.addColorStop(.45, `rgba(5,8,16,${0.35 * a})`);
+  g.addColorStop(1, `rgba(5,8,16,${bottom * a})`);
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+}
+function metroLogo(x, y, r, k = 1, color = RED) {
+  ctx.save(); ctx.translate(x, y); ctx.scale(k, k);
+  ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.fillStyle = color; ctx.fill();
+  ctx.lineWidth = r * 0.08; ctx.strokeStyle = '#fff'; ctx.stroke();
+  text('M', 0, r * 0.36, r * 1.05, '#fff', 900, 'center');
+  ctx.restore();
+}
+function pill(x, y, label, color, size = 30, alpha = 1) {
+  ctx.save(); ctx.globalAlpha *= alpha;
+  const w = textW(label, size, 800) + size * 1.2, h = size * 1.7;
+  rrect(x, y, w, h, h / 2); ctx.fillStyle = color; ctx.fill();
+  text(label, x + w / 2, y + h * 0.68, size, '#fff', 800, 'center');
+  ctx.restore(); return w;
+}
+function card(x, y, w, h, alpha = 1, fill = 'rgba(12,17,30,0.78)') {
+  ctx.save(); ctx.globalAlpha *= alpha;
+  rrect(x, y, w, h, 34); ctx.fillStyle = fill; ctx.fill();
+  ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(255,255,255,0.14)'; ctx.stroke(); ctx.restore();
+}
+const fmt = n => Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+
+// ---------- scenes ----------
+// each scene: [start, end, drawFn]
+const scenes = [
+  // 1. HOOK
+  [0, 5.2, t => {
+    cover(img('i1'), 0, 5.2, t, 1.25, 1.08);
+    shade(1, 0.55, 0.85);
+    const k = back(prog(t, 0.2, 0.7));
+    metroLogo(540, 560, 110, k);
+    rise(t, 0.7, 'ЭГЕР', 540, 820, 64, GOLD, 800, 'center');
+    rise(t, 0.95, 'КЫРГЫЗСТАНДА', 540, 935, 96, '#fff', 900, 'center');
+    rise(t, 1.2, 'МЕТРО', 540, 1080, 170, RED, 900, 'center');
+    rise(t, 1.45, 'КУРУЛСА...', 540, 1200, 104, '#fff', 900, 'center');
+    rise(t, 2.4, 'эмне өзгөрмөк?', 540, 1320, 64, 'rgba(255,255,255,.9)', 600, 'center');
+    // underline sweep
+    const u = easeIO(prog(t, 2.8, 0.8));
+    ctx.fillStyle = GOLD; ctx.fillRect(540 - 230 * u, 1350, 460 * u, 8);
+  }],
+  // 2. NEIGHBOURS / HISTORY
+  [5.2, 12.2, t => {
+    const tt = t - 5.2;
+    const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#0E1530'); g.addColorStop(1, '#05070F');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    rise(tt, 0.1, 'КОШУНАЛАРДА', 90, 420, 52, GOLD, 800);
+    rise(tt, 0.3, 'метро бар', 90, 520, 96, '#fff', 900);
+    // timeline
+    const items = [
+      ['1977', 'Ташкент', 'метро ачылган', GREEN, true],
+      ['2011', 'Алматы', 'метро ачылган', BLUE, true],
+      ['???', 'Бишкек', 'азырынча жок', RED, false],
+    ];
+    const x0 = 170, y0 = 700, step = 300;
+    const lineK = easeIO(prog(tt, 0.6, 2.2));
+    ctx.fillStyle = 'rgba(255,255,255,.18)'; ctx.fillRect(x0 - 4, y0, 8, step * 2 * lineK);
+    items.forEach(([yr, city, note, col, ok], i) => {
+      const s = 0.8 + i * 0.9; const k = prog(tt, s, 0.5);
+      if (k <= 0) return;
+      const y = y0 + i * step;
+      ctx.save(); ctx.globalAlpha = k;
+      ctx.beginPath(); ctx.arc(x0, y, 34 * back(k), 0, Math.PI * 2); ctx.fillStyle = col; ctx.fill();
+      ctx.lineWidth = 6; ctx.strokeStyle = '#fff'; ctx.stroke();
+      if (ok) { ctx.strokeStyle = '#fff'; ctx.lineWidth = 7; ctx.beginPath(); ctx.moveTo(x0 - 14, y); ctx.lineTo(x0 - 3, y + 11); ctx.lineTo(x0 + 16, y - 12); ctx.stroke(); }
+      else text('?', x0, y + 16, 46, '#fff', 900, 'center');
+      ctx.restore();
+      rise(tt, s + .1, yr, x0 + 80, y - 18, 60, col, 900);
+      rise(tt, s + .2, city, x0 + 80, y + 52, 64, '#fff', 800);
+      rise(tt, s + .3, note, x0 + 80, y + 104, 38, 'rgba(255,255,255,.65)', 500);
+    });
+    // fact card
+    const ck = easeOut(prog(tt, 4.0, 0.6));
+    if (ck > 0) {
+      card(70, 1440 + (1 - ck) * 60, 940, 200, ck);
+      ctx.save(); ctx.globalAlpha = ck;
+      text('Фрунзе метросу 1980-жылдары', 115, 1520 + (1 - ck) * 60, 44, '#fff', 700);
+      text('пландалган, бирок курулбай калган', 115, 1585 + (1 - ck) * 60, 44, 'rgba(255,255,255,.75)', 500);
+      ctx.restore();
+    }
+  }],
+  // 3. PROBLEM
+  [12.2, 21.5, t => {
+    const tt = t - 12.2;
+    cover(img('i2'), 12.2, 21.5, t, 1.1, 1.22, 60, 0);
+    shade(1, 0.7, 0.92);
+    pill(90, 330, 'КӨЙГӨЙ', RED, 34, easeOut(prog(tt, .1)));
+    rise(tt, 0.3, 'Бишкек тыгылып', 90, 520, 84, '#fff', 900);
+    rise(tt, 0.5, 'калды', 90, 615, 84, '#fff', 900);
+    const stats = [
+      [0.9, 1.2, ' млн+', 'Бишкектин калкы', v => (v).toFixed(1).replace('.', ','), GOLD],
+      [2.3, 1.5, ' саат', 'күнүнө жолдо (орточо)', v => (v).toFixed(1).replace('.', ','), '#fff'],
+      [3.7, 0, '', 'кышында смог — дүйнөдөгү эң булганган шаарлардын катарында', null, RED],
+    ];
+    stats.forEach(([s, val, unit, lbl, f, col], i) => {
+      const k = easeOut(prog(tt, s, 0.6)); if (k <= 0) return;
+      const y = 760 + i * 270;
+      card(70, y + (1 - k) * 50, 940, 230, k);
+      ctx.save(); ctx.globalAlpha = k;
+      if (f) {
+        const v = val * easeOut(prog(tt, s, 1.4));
+        const big = f(v) + unit;
+        text(big, 115, y + 120 + (1 - k) * 50, 96, col, 900);
+        text(lbl, 115, y + 185 + (1 - k) * 50, 40, 'rgba(255,255,255,.75)', 500);
+      } else {
+        // smog icon: cloud
+        const cx = 175, cy = y + 115 + (1 - k) * 50;
+        ctx.fillStyle = '#9AA3B5';
+        [[-30, 10, 38], [10, -12, 48], [50, 12, 36]].forEach(([dx, dy, r]) => { ctx.beginPath(); ctx.arc(cx + dx, cy + dy, r, 0, 7); ctx.fill(); });
+        ctx.fillRect(cx - 60, cy + 10, 145, 40);
+        text('Кышында смог', 290, y + 105 + (1 - k) * 50, 58, RED, 900);
+        text('дүйнөдөгү эң булганган', 290, y + 158 + (1 - k) * 50, 36, 'rgba(255,255,255,.8)', 500);
+        text('шаарлардын катарында', 290, y + 200 + (1 - k) * 50, 36, 'rgba(255,255,255,.8)', 500);
+      }
+      ctx.restore();
+    });
+  }],
+  // 4. MAP
+  [21.5, 33.5, t => {
+    const tt = t - 21.5;
+    ctx.fillStyle = '#F4F1EA'; ctx.fillRect(0, 0, W, H);
+    // grid streets
+    ctx.strokeStyle = 'rgba(0,0,0,.06)'; ctx.lineWidth = 3;
+    for (let x = 40; x < W; x += 90) { ctx.beginPath(); ctx.moveTo(x, 560); ctx.lineTo(x + 20, 1500); ctx.stroke(); }
+    for (let y = 560; y < 1500; y += 90) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y + 10); ctx.stroke(); }
+    // mountains in south
+    ctx.fillStyle = '#D9DEE6';
+    ctx.beginPath(); ctx.moveTo(0, 1560);
+    [[90, 1440], [200, 1510], [330, 1400], [470, 1500], [600, 1380], [760, 1490], [880, 1410], [1080, 1500]].forEach(p => ctx.lineTo(...p));
+    ctx.lineTo(W, 1600); ctx.lineTo(0, 1600); ctx.fill();
+    ctx.fillStyle = '#fff';
+    [[330, 1400], [600, 1380], [880, 1410]].forEach(([x, y]) => { ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x - 32, y + 38); ctx.lineTo(x + 30, y + 36); ctx.fill(); });
+    text('Ала-Тоо', 960, 1580, 30, '#8A93A3', 700, 'right');
+
+    text('БИШКЕК МЕТРОСУ', 90, 330, 70, INK, 900);
+    text('болжолдуу схема', 90, 400, 42, '#6B7385', 600);
+
+    const L1 = [[110, 1000], [270, 985], [420, 960], [560, 960], [720, 975], [880, 1000], [990, 1020]];
+    const L1n = ['Батыш авт.', 'Ош базары', 'Филармония', '', 'Политех', 'Кызыл-Аскер', 'Чыгыш авт.'];
+    const L2 = [[600, 600], [585, 730], [570, 850], [560, 960], [575, 1090], [600, 1220], [640, 1340]];
+    const L2n = ['Дордой', 'Аламүдүн', 'Жибек Жолу', '', 'Ахунбаев', 'Асанбай', 'Көк-Жар'];
+    function drawLine(P, col, k) {
+      // compute total length
+      const seglen = []; let tot = 0;
+      for (let i = 1; i < P.length; i++) { const d = Math.hypot(P[i][0] - P[i - 1][0], P[i][1] - P[i - 1][1]); seglen.push(d); tot += d; }
+      let rem = tot * k;
+      if (k <= 0) return { seglen, tot };
+      ctx.save(); ctx.strokeStyle = col; ctx.lineWidth = 22; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+      ctx.beginPath(); ctx.moveTo(...P[0]);
+      for (let i = 1; i < P.length && rem > 0; i++) {
+        const f = Math.min(1, rem / seglen[i - 1]);
+        ctx.lineTo(lerp(P[i - 1][0], P[i][0], f), lerp(P[i - 1][1], P[i][1], f)); rem -= seglen[i - 1];
+      }
+      ctx.stroke(); ctx.restore();
+      return { seglen, tot };
+    }
+    function along(P, info, k) {
+      let rem = info.tot * k;
+      for (let i = 1; i < P.length; i++) {
+        if (rem <= info.seglen[i - 1]) { const f = rem / info.seglen[i - 1]; return [lerp(P[i - 1][0], P[i][0], f), lerp(P[i - 1][1], P[i][1], f)]; }
+        rem -= info.seglen[i - 1];
+      }
+      return P[P.length - 1];
+    }
+    const k1 = easeIO(prog(tt, 0.5, 2.2)), k2 = easeIO(prog(tt, 2.4, 2.2));
+    const i1 = drawLine(L1, RED, k1), i2 = drawLine(L2, BLUE, k2);
+    function stations(P, names, col, s0, below) {
+      P.forEach((p, i) => {
+        if (i === 3 && P === L2) return;
+        const n = names[i];
+        const idx = P === L1 && i === 3 ? -1 : i;
+        if (idx === -1) return;
+        const k = back(prog(tt, s0 + i * 0.3, 0.4)); if (k <= 0) return;
+        ctx.beginPath(); ctx.arc(p[0], p[1], 17 * k, 0, 7); ctx.fillStyle = '#fff'; ctx.fill();
+        ctx.lineWidth = 8; ctx.strokeStyle = col; ctx.stroke();
+        if (n) {
+          ctx.save(); ctx.globalAlpha = clamp(k);
+          if (P === L1) { ctx.translate(p[0], p[1] + [62, -42, 62, 0, 62, -42, 62][i]); text(n, 0, 0, 28, INK, 700, 'center'); }
+          else text(n, p[0] + 34, p[1] + 10, 30, INK, 700, 'left');
+          ctx.restore();
+        }
+      });
+    }
+    stations(L1, L1n, RED, 0.6, true);
+    stations(L2, L2n, BLUE, 2.5, false);
+    // interchange
+    const ik = back(prog(tt, 4.8, 0.5));
+    if (ik > 0) {
+      ctx.beginPath(); ctx.arc(560, 960, 30 * ik, 0, 7); ctx.fillStyle = '#fff'; ctx.fill();
+      ctx.lineWidth = 10; ctx.strokeStyle = INK; ctx.stroke();
+      ctx.save(); ctx.globalAlpha = clamp(ik);
+      rrect(300, 1045, 240, 60, 30); ctx.fillStyle = INK; ctx.fill();
+      text('Ала-Тоо аянты', 420, 1086, 28, '#fff', 800, 'center'); ctx.restore();
+    }
+    // trains running
+    if (tt > 5.2) {
+      const a = ((tt - 5.2) / 3.2) % 1, b = ((tt - 5.2) / 3.6 + .4) % 1;
+      [[along(L1, i1, a), RED], [along(L1, i1, 1 - b), RED], [along(L2, i2, b), BLUE], [along(L2, i2, 1 - a), BLUE]].forEach(([p, col]) => {
+        ctx.beginPath(); ctx.arc(p[0], p[1], 13, 0, 7); ctx.fillStyle = GOLD; ctx.fill(); ctx.lineWidth = 4; ctx.strokeStyle = INK; ctx.stroke();
+      });
+    }
+    // legend / stats
+    const lk = easeOut(prog(tt, 6.2, 0.6));
+    if (lk > 0) {
+      ctx.save(); ctx.globalAlpha = lk; ctx.translate(0, (1 - lk) * 40);
+      rrect(70, 1630, 940, 150, 30); ctx.fillStyle = INK; ctx.fill();
+      ctx.fillStyle = RED; ctx.fillRect(110, 1675, 50, 14); text('Батыш — Чыгыш', 175, 1692, 32, '#fff', 700);
+      ctx.fillStyle = BLUE; ctx.fillRect(110, 1725, 50, 14); text('Түндүк — Түштүк', 175, 1742, 32, '#fff', 700);
+      text('2 линия · 13 станция', 975, 1712, 34, GOLD, 800, 'right');
+      ctx.restore();
+    }
+  }],
+  // 5. BENEFITS
+  [33.5, 47.5, t => {
+    const tt = t - 33.5;
+    cover(img('i3'), 33.5, 47.5, t, 1.08, 1.25);
+    ctx.fillStyle = 'rgba(5,8,16,.78)'; ctx.fillRect(0, 0, W, H);
+    pill(90, 300, 'ЭМНЕ БОЛМОК?', GREEN, 34, easeOut(prog(tt, .1)));
+    // big time compare
+    rise(tt, 0.3, 'Жолдо убакыт', 90, 470, 56, 'rgba(255,255,255,.85)', 700);
+    const k = easeOut(prog(tt, 0.6, 1.6));
+    const mins = Math.round(lerp(60, 20, k));
+    text(`${mins}`, 90, 650, 190, k > .98 ? GREEN : '#fff', 900, 'left', clamp(tt / .4));
+    text('мүнөт', 90 + textW(`${mins}`, 190, 900) + 20, 650, 56, 'rgba(255,255,255,.8)', 700, 'left', clamp(tt / .4));
+    if (k > 0.98) rise(tt, 2.3, 'тыгынсыз, 3 эсе тезирээк', 90, 720, 42, GREEN, 700);
+
+    // speed bars
+    rise(tt, 2.8, 'Орточо ылдамдык, км/саат', 90, 860, 40, '#fff', 800);
+    const bars = [['Метро', 40, GREEN], ['Автобус', 18, GOLD], ['Унаа (тыгында)', 15, RED]];
+    bars.forEach(([lbl, v, col], i) => {
+      const s = 3.1 + i * 0.25, bk = easeOut(prog(tt, s, 1.0)); if (bk <= 0) return;
+      const y = 910 + i * 120;
+      text(lbl, 90, y + 30, 34, 'rgba(255,255,255,.85)', 600, 'left', bk);
+      rrect(90, y + 48, 820 * (v / 40) * bk, 46, 23); ctx.fillStyle = col; ctx.fill();
+      text(String(Math.round(v * bk)), 90 + 820 * (v / 40) * bk + 18, y + 85, 38, '#fff', 900);
+    });
+    // benefit chips grid
+    const chips = [
+      ['1 поезд ≈ 1000 киши', '≈ 12 автобустун ордуна', BLUE],
+      ['Таза аба', 'азыраак унаа — азыраак түтүн', GREEN],
+      ['Миңдеген жумуш', 'курулушта жана тейлөөдө', GOLD],
+      ['Шаар өсөт', 'станциялардын айланасы жанданат', RED],
+    ];
+    chips.forEach(([a, b, col], i) => {
+      const s = 6.2 + i * 1.2, ck = easeOut(prog(tt, s, 0.5)); if (ck <= 0) return;
+      const x = 70 + (i % 2) * 480, y = 1290 + Math.floor(i / 2) * 230 + (1 - ck) * 40;
+      card(x, y, 460, 205, ck);
+      ctx.save(); ctx.globalAlpha = ck;
+      ctx.fillStyle = col; rrect(x + 30, y + 32, 60, 10, 5); ctx.fill();
+      text(a, x + 30, y + 100, 38, '#fff', 900);
+      const words = b.split(' '); let line = '', ly = y + 148;
+      words.forEach(w => { const tst = line ? line + ' ' + w : w; if (textW(tst, 29, 500) > 400) { text(line, x + 30, ly, 29, 'rgba(255,255,255,.72)', 500); line = w; ly += 38; } else line = tst; });
+      text(line, x + 30, ly, 29, 'rgba(255,255,255,.72)', 500);
+      ctx.restore();
+    });
+  }],
+  // 6. COST
+  [47.5, 54.5, t => {
+    const tt = t - 47.5;
+    cover(img('i5'), 47.5, 54.5, t, 1.2, 1.05);
+    shade(1, 0.8, 0.92);
+    pill(90, 330, 'БААСЫ КАНЧА?', GOLD, 34, easeOut(prog(tt, .1)));
+    rise(tt, 0.3, '1 км метро', 90, 540, 64, '#fff', 800);
+    const k = easeOut(prog(tt, 0.5, 1.5));
+    text(`$${Math.round(100 * k)}–${Math.round(150 * k)} млн`, 90, 690, 120, GOLD, 900, 'left', clamp(tt / .5));
+    const k2 = easeOut(prog(tt, 2.2, 0.6));
+    if (k2 > 0) {
+      card(70, 800 + (1 - k2) * 40, 940, 250, k2);
+      ctx.save(); ctx.globalAlpha = k2; ctx.translate(0, (1 - k2) * 40);
+      text('20 км линия ≈', 115, 885, 48, 'rgba(255,255,255,.8)', 600);
+      text('$2–3 млрд', 115, 990, 110, '#fff', 900);
+      ctx.restore();
+    }
+    const k3 = easeOut(prog(tt, 3.4, 0.6));
+    if (k3 > 0) {
+      card(70, 1090 + (1 - k3) * 40, 940, 200, k3);
+      ctx.save(); ctx.globalAlpha = k3; ctx.translate(0, (1 - k3) * 40);
+      text('Курулуш мөөнөтү', 115, 1165, 44, 'rgba(255,255,255,.8)', 600);
+      text('7–10 жыл', 115, 1250, 80, GREEN, 900);
+      ctx.restore();
+    }
+    rise(tt, 4.6, '*дүйнөлүк тажрыйба боюнча болжолдуу эсеп', 90, 1360, 30, 'rgba(255,255,255,.55)', 500);
+  }],
+  // 7. CTA
+  [54.5, 60.5, t => {
+    const tt = t - 54.5;
+    cover(img('i4'), 54.5, 60.5, t, 1.05, 1.15, 0, -60);
+    shade(1, 0.6, 0.88);
+    metroLogo(540, 520, 85, back(prog(tt, .1, .6)));
+    rise(tt, 0.4, 'Бишкекке метро', 540, 760, 84, '#fff', 900, 'center');
+    rise(tt, 0.6, 'керекпи?', 540, 860, 96, GOLD, 900, 'center');
+    const k = easeOut(prog(tt, 1.4, 0.6));
+    if (k > 0) {
+      ctx.save(); ctx.globalAlpha = k;
+      const w = 860, x = (W - w) / 2, y = 1000 + (1 - k) * 40;
+      rrect(x, y, w, 250, 40); ctx.fillStyle = 'rgba(255,255,255,.95)'; ctx.fill();
+      text('Кайсы станциядан', 540, y + 100, 50, INK, 800, 'center');
+      text('түшмөк элеңиз?', 540, y + 170, 50, INK, 800, 'center');
+      ctx.restore();
+    }
+    const k2 = easeOut(prog(tt, 2.4, 0.6));
+    if (k2 > 0) {
+      const bob = Math.sin(tt * 6) * 8;
+      ctx.save(); ctx.globalAlpha = k2;
+      text('Комментарийге жазыңыз', 540, 1350, 46, '#fff', 700, 'center');
+      ctx.fillStyle = RED; ctx.beginPath(); ctx.moveTo(510, 1395 + bob); ctx.lineTo(570, 1395 + bob); ctx.lineTo(540, 1440 + bob); ctx.fill();
+      ctx.restore();
+    }
+  }],
+];
+
+// persistent progress "metro line"
+function progressLine(t) {
+  const y = 190, x0 = 90, x1 = 990;
+  ctx.save(); ctx.globalAlpha = 0.95;
+  ctx.fillStyle = 'rgba(120,130,150,.45)'; rrect(x0, y - 4, x1 - x0, 8, 4); ctx.fill();
+  const k = clamp(t / DUR);
+  ctx.fillStyle = RED; rrect(x0, y - 4, (x1 - x0) * k, 8, 4); ctx.fill();
+  scenes.forEach(([s], i) => {
+    const x = x0 + (x1 - x0) * (s / DUR) + (i === 0 ? 0 : 0);
+    ctx.beginPath(); ctx.arc(x, y, 11, 0, 7); ctx.fillStyle = t >= s ? RED : '#fff'; ctx.fill();
+    ctx.lineWidth = 4; ctx.strokeStyle = t >= s ? '#fff' : 'rgba(120,130,150,.9)'; ctx.stroke();
+  });
+  ctx.beginPath(); ctx.arc(x0 + (x1 - x0) * k, y, 15, 0, 7); ctx.fillStyle = GOLD; ctx.fill();
+  ctx.restore();
+}
+
+function draw(t) {
+  ctx.clearRect(0, 0, W, H);
+  const XF = 0.45;
+  scenes.forEach(([s, e, fn], i) => {
+    const next = scenes[i + 1];
+    const end = next ? next[0] + XF : e;
+    if (t < s || t > end) return;
+    ctx.save();
+    // previous scene fades out while this one fades in, layered on top
+    const a = i === 0 ? 1 : clamp((t - s) / XF);
+    ctx.globalAlpha = a;
+    fn(t);
+    ctx.restore();
+  });
+  // fade from/to black edges
+  if (t > DUR - 0.6) { ctx.fillStyle = `rgba(0,0,0,${clamp((t - (DUR - 0.6)) / 0.6)})`; ctx.fillRect(0, 0, W, H); }
+  progressLine(t);
+}
+window.draw = draw;
+window.ready = Promise.all([...document.images].map(im => im.complete ? 1 : new Promise(r => { im.onload = im.onerror = r; })));
+</script></body></html>
