@@ -1,0 +1,296 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>html,body{margin:0;background:#0b1020}canvas{display:block}</style>
+</head><body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script>
+// Инфографика: "Эгер акча жок болуп калса эмне болот?" — 1080x1920, 60 сек
+const c = document.getElementById('c');
+const ctx = c.getContext('2d');
+const W = 1080, H = 1920;
+const FONT = '"Inter", "DejaVu Sans", sans-serif';
+const EMO = '"Noto Color Emoji"';
+const C = { bg1: '#0b1020', bg2: '#16213e', gold: '#f5c542', green: '#3ddc97', red: '#ff5d5d', text: '#f4f6fb', mute: '#8a94b3', card: 'rgba(255,255,255,0.06)' };
+
+// Сценалар жана субтитрлер (сек). Үн кошулганда ушул убакыттарды гана өзгөртүү жетиштүү.
+const SCENES = [
+  { s: 0,  e: 6,  draw: sHook,    sub: 'Эгер эртең дүйнөдө акча такыр жок болуп калса, эмне болот?' },
+  { s: 6,  e: 13, draw: sDay1,    sub: 'Биринчи күнү эле дүкөндөр жабылат. Нанды эмне менен сатып аласың?' },
+  { s: 13, e: 21, draw: sBarter,  sub: 'Адамдар бартерге кайтат: бир кой — бир кап ун, бир тоок — он жумуртка.' },
+  { s: 21, e: 29, draw: sProblem, sub: 'Бирок чоң көйгөй бар: сенде кой бар, а нан сатуучуга кой керек эмес.' },
+  { s: 29, e: 38, draw: sCollapse,sub: 'Айлык, банк, кредит — баары токтойт. Мугалимге, дарыгерге ким төлөйт?' },
+  { s: 38, e: 46, draw: sNewMoney,sub: 'Адамдар кайрадан жаңы акча ойлоп табат: туз, алтын, ал тургай сигарет.' },
+  { s: 46, e: 53, draw: sTrust,   sub: 'Анткени акча — бул жөн гана кагаз эмес. Бул — ишеним жана макулдашуу.' },
+  { s: 53, e: 60, draw: sCTA,     sub: 'Ал эми сен эмнени алмашмаксың? Комментарийге жаз!' },
+];
+const DURATION = 60;
+
+// ---------- helpers ----------
+const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
+const ease = x => x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+const easeOut = x => 1 - Math.pow(1 - x, 3);
+const back = x => { const c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2); };
+const seg = (t, a, b, f = ease) => f(clamp((t - a) / (b - a)));
+const lerp = (a, b, k) => a + (b - a) * k;
+
+function rrect(x, y, w, h, r) {
+  ctx.beginPath(); ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
+}
+function text(str, x, y, size, color = C.text, weight = 700, align = 'center', alpha = 1) {
+  ctx.save(); ctx.globalAlpha *= alpha; ctx.font = `${weight} ${size}px ${FONT}`;
+  ctx.fillStyle = color; ctx.textAlign = align; ctx.textBaseline = 'middle'; ctx.fillText(str, x, y); ctx.restore();
+}
+function emoji(e, x, y, size, alpha = 1, scale = 1, rot = 0) {
+  if (alpha <= 0 || scale <= 0) return;
+  ctx.save(); ctx.globalAlpha *= alpha; ctx.translate(x, y); ctx.rotate(rot); ctx.scale(scale, scale);
+  ctx.font = `${size}px ${EMO}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(e, 0, size * 0.05); ctx.restore();
+}
+function wrap(str, maxW, size, weight = 700) {
+  ctx.font = `${weight} ${size}px ${FONT}`;
+  const words = str.split(' '), lines = []; let cur = '';
+  for (const w of words) { const t = cur ? cur + ' ' + w : w; if (ctx.measureText(t).width > maxW && cur) { lines.push(cur); cur = w; } else cur = t; }
+  if (cur) lines.push(cur); return lines;
+}
+function title(str, y, k, color = C.text, size = 76) {
+  const lines = wrap(str, 920, size, 800);
+  lines.forEach((l, i) => text(l, W / 2, y + i * size * 1.18 + (1 - k) * 40, size, color, 800, 'center', k));
+}
+function card(x, y, w, h, alpha = 1, stroke = null) {
+  ctx.save(); ctx.globalAlpha *= alpha; rrect(x, y, w, h, 36); ctx.fillStyle = C.card; ctx.fill();
+  if (stroke) { ctx.lineWidth = 4; ctx.strokeStyle = stroke; ctx.stroke(); } ctx.restore();
+}
+function arrow(x1, y1, x2, y2, k, color = C.gold, both = false) {
+  if (k <= 0) return;
+  const x = lerp(x1, x2, k), y = lerp(y1, y2, k);
+  ctx.save(); ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = 10; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x, y); ctx.stroke();
+  const a = Math.atan2(y2 - y1, x2 - x1);
+  const head = (hx, hy, ang) => { ctx.beginPath(); ctx.moveTo(hx, hy); ctx.lineTo(hx - 34 * Math.cos(ang - .5), hy - 34 * Math.sin(ang - .5)); ctx.lineTo(hx - 34 * Math.cos(ang + .5), hy - 34 * Math.sin(ang + .5)); ctx.closePath(); ctx.fill(); };
+  head(x, y, a); if (both && k >= 1) head(x1, y1, a + Math.PI);
+  ctx.restore();
+}
+function cross(x, y, s, k) {
+  if (k <= 0) return;
+  ctx.save(); ctx.strokeStyle = C.red; ctx.lineWidth = 18; ctx.lineCap = 'round';
+  const k1 = clamp(k * 2), k2 = clamp(k * 2 - 1);
+  ctx.beginPath(); ctx.moveTo(x - s, y - s); ctx.lineTo(x - s + 2 * s * k1, y - s + 2 * s * k1); ctx.stroke();
+  if (k2 > 0) { ctx.beginPath(); ctx.moveTo(x + s, y - s); ctx.lineTo(x + s - 2 * s * k2, y - s + 2 * s * k2); ctx.stroke(); }
+  ctx.restore();
+}
+function pill(str, x, y, color, k) {
+  ctx.save(); ctx.globalAlpha *= k; ctx.font = `800 40px ${FONT}`;
+  const w = ctx.measureText(str).width + 64; rrect(x - w / 2, y - 38, w, 76, 38); ctx.fillStyle = color; ctx.fill();
+  ctx.restore(); text(str, x, y + 2, 40, '#0b1020', 800, 'center', k);
+}
+function stepTag(n, k) { pill(`${n}-кадам`, W / 2, 250, C.gold, k * 0.9); }
+
+// ---------- background ----------
+const coins = Array.from({ length: 22 }, (_, i) => ({ x: (i * 197) % W, y: (i * 389) % H, s: 0.5 + (i % 5) * 0.15, v: 14 + (i % 7) * 6 }));
+function bg(t) {
+  const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, C.bg2); g.addColorStop(1, C.bg1);
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  // жумшак жарык тактары
+  const r = ctx.createRadialGradient(W * 0.8, 380, 0, W * 0.8, 380, 700); r.addColorStop(0, 'rgba(245,197,66,0.12)'); r.addColorStop(1, 'rgba(245,197,66,0)');
+  ctx.fillStyle = r; ctx.fillRect(0, 0, W, H);
+  ctx.save(); ctx.globalAlpha = 0.05;
+  for (const p of coins) { const y = (p.y - t * p.v) % H; emoji('🪙', p.x, y < 0 ? y + H : y, 60 * p.s); }
+  ctx.restore();
+}
+
+// ---------- scenes (lt = local time, d = duration) ----------
+function sHook(lt, d) {
+  const k = seg(lt, 0.1, 0.9);
+  title('ЭГЕР АКЧА', 520, k, C.text, 104);
+  title('ЖОК БОЛУП КАЛСА?', 650, seg(lt, 0.4, 1.2), C.gold, 92);
+  // учуп кеткен купюралар
+  for (let i = 0; i < 7; i++) {
+    const st = 1.4 + i * 0.25, p = clamp((lt - st) / 3);
+    const x = W / 2 + (i - 3) * 60 + (i - 3) * 90 * p;
+    const y = 1180 - p * 380;
+    emoji('💵', x, y, 150, 1 - p, 1, Math.sin(i + lt * 3) * 0.6 * p);
+  }
+  const wk = seg(lt, 1.2, 2.2, back);
+  emoji('👛', W / 2, 1220, 260, clamp(wk * 2), wk);
+  text('бош капчык', W / 2, 1400, 44, C.mute, 600, 'center', seg(lt, 3, 3.8));
+}
+
+function sDay1(lt, d) {
+  stepTag(1, seg(lt, 0, .5));
+  title('1-КҮН: ДҮКӨНДӨР ЖАБЫК', 400, seg(lt, 0, .8), C.text, 72);
+  const sk = seg(lt, 0.5, 1.3, back);
+  emoji('🏪', W / 2, 760, 300, clamp(sk * 2), sk);
+  // "ЖАБЫК" белгиси
+  const sg = seg(lt, 1.5, 2.2, back);
+  if (sg > 0) {
+    ctx.save(); ctx.translate(W / 2, 930); ctx.rotate(-0.08); ctx.scale(sg, sg);
+    rrect(-170, -55, 340, 110, 18); ctx.fillStyle = C.red; ctx.fill(); ctx.restore();
+    ctx.save(); ctx.translate(W / 2, 930); ctx.rotate(-0.08); text('ЖАБЫК', 0, 4, 64, '#fff', 900, 'center', sg); ctx.restore();
+  }
+  // нан + суроо
+  const bk = seg(lt, 3, 3.8, back);
+  card(140, 1060, 800, 320, clamp(bk * 2));
+  emoji('🍞', 360, 1220, 180, clamp(bk * 2), bk);
+  emoji('❓', 720, 1220 + Math.sin(lt * 5) * 10, 170, clamp(bk * 2), bk);
+  text('Нанды эмне менен аласың?', W / 2, 1440, 46, C.mute, 600, 'center', seg(lt, 3.8, 4.6));
+}
+
+function sBarter(lt, d) {
+  stepTag(2, seg(lt, 0, .5));
+  title('БАРТЕР КАЙТАТ', 400, seg(lt, 0, .8), C.gold, 84);
+  text('товарды товарга алмашуу', W / 2, 500, 44, C.mute, 600, 'center', seg(lt, .4, 1.2));
+  const rows = [
+    { a: '🐑', an: '1 кой', b: '🌾', bn: '1 кап ун', at: 1.2, y: 760 },
+    { a: '🐔', an: '1 тоок', b: '🥚', bn: '10 жумуртка', at: 3.6, y: 1130 },
+  ];
+  for (const r of rows) {
+    const k = seg(lt, r.at, r.at + .8, back);
+    card(90, r.y - 160, 900, 320, clamp(k * 2));
+    emoji(r.a, 260, r.y - 30, 170, clamp(k * 2), k);
+    text(r.an, 260, r.y + 105, 44, C.text, 700, 'center', clamp(k * 2));
+    const bk = seg(lt, r.at + 1.2, r.at + 2, back);
+    emoji(r.b, 820, r.y - 30, 170, clamp(bk * 2), bk);
+    text(r.bn, 820, r.y + 105, 44, C.text, 700, 'center', clamp(bk * 2));
+    arrow(400, r.y - 30, 680, r.y - 30, seg(lt, r.at + .6, r.at + 1.4), C.gold, true);
+  }
+  // "=" икондорунун жанында 10 жумуртка көрсөтүү
+  const ek = seg(lt, 6, 6.8);
+  text('🤝  Акчасыз соода', W / 2, 1420, 52, C.green, 800, 'center', ek);
+}
+
+function sProblem(lt, d) {
+  stepTag(3, seg(lt, 0, .5));
+  title('ЧОҢ КӨЙГӨЙ', 400, seg(lt, 0, .8), C.red, 88);
+  // сен -> сатуучу
+  const k1 = seg(lt, .6, 1.4, back);
+  emoji('🧑', 250, 760, 190, clamp(k1 * 2), k1);
+  emoji('🐑', 250, 960, 130, clamp(k1 * 2), k1);
+  text('Сен', 250, 1080, 44, C.text, 700, 'center', clamp(k1 * 2));
+  const k2 = seg(lt, 1.2, 2, back);
+  emoji('🧑‍🍳', 830, 760, 190, clamp(k2 * 2), k2);
+  emoji('🍞', 830, 960, 130, clamp(k2 * 2), k2);
+  text('Нан сатуучу', 830, 1080, 44, C.text, 700, 'center', clamp(k2 * 2));
+  arrow(400, 860, 680, 860, seg(lt, 2.2, 3.2), C.gold);
+  // сүйлөө булуту
+  const bk = seg(lt, 3.4, 4.2, back);
+  if (bk > 0) {
+    ctx.save(); ctx.globalAlpha *= clamp(bk * 2); ctx.translate(700, 560); ctx.scale(bk, bk);
+    rrect(-260, -70, 520, 140, 40); ctx.fillStyle = '#fff'; ctx.fill();
+    ctx.beginPath(); ctx.moveTo(60, 70); ctx.lineTo(120, 130); ctx.lineTo(130, 70); ctx.fill(); ctx.restore();
+    text('Мага кой керек эмес!', 700, 562, 42, '#0b1020', 800, 'center', clamp(bk * 2));
+  }
+  cross(540, 860, 70, seg(lt, 4.2, 5));
+  const fk = seg(lt, 5.2, 6);
+  card(90, 1200, 900, 230, fk, C.red);
+  text('Каалоолор дал келбесе —', W / 2, 1280, 48, C.text, 700, 'center', fk);
+  text('алмашуу токтойт', W / 2, 1350, 56, C.red, 800, 'center', fk);
+}
+
+function sCollapse(lt, d) {
+  stepTag(4, seg(lt, 0, .5));
+  title('ЭКОНОМИКА ТОКТОЙТ', 400, seg(lt, 0, .8), C.text, 76);
+  const items = [['💼', 'Айлык'], ['🏦', 'Банк'], ['💳', 'Кредит']];
+  const base = 880, maxH = 300, bw = 200;
+  items.forEach(([e, n], i) => {
+    const x = 240 + i * 300, ak = seg(lt, .6 + i * .3, 1.4 + i * .3);
+    const drop = seg(lt, 2.6 + i * .25, 3.8 + i * .25);
+    const h = maxH * ak * (1 - drop * 0.94);
+    ctx.save(); ctx.globalAlpha = ak; rrect(x - bw / 2, base - h, bw, h, 20);
+    ctx.fillStyle = drop > .5 ? C.red : C.green; ctx.fill(); ctx.restore();
+    emoji(e, x, base + 70, 90, ak); text(n, x, base + 150, 42, C.text, 700, 'center', ak);
+    text(drop > .9 ? '0' : '', x, base - h - 50, 56, C.red, 900, 'center', drop);
+  });
+  arrow(990, 560, 990, 840, seg(lt, 2.6, 3.8), C.red);
+  // ким төлөйт?
+  const pk = seg(lt, 4.8, 5.6);
+  card(90, 1110, 900, 300, pk);
+  const ppl = [['👩‍🏫', 'Мугалим'], ['👨‍⚕️', 'Дарыгер'], ['🏭', 'Завод']];
+  ppl.forEach(([e, n], i) => {
+    const x = 260 + i * 280, k = seg(lt, 5 + i * .3, 5.8 + i * .3, back);
+    emoji(e, x, 1210, 120, clamp(k * 2) * (lt > 7.2 ? 0.45 : 1), k);
+    text(n, x, 1330, 40, C.mute, 700, 'center', clamp(k * 2));
+  });
+  text('Ким төлөйт?', W / 2, 1500, 60, C.gold, 800, 'center', seg(lt, 6.4, 7.2));
+}
+
+function sNewMoney(lt, d) {
+  stepTag(5, seg(lt, 0, .5));
+  title('ЖАҢЫ «АКЧА» ПАЙДА БОЛОТ', 400, seg(lt, 0, .8), C.green, 60);
+  text('адамдар баалуу нерсени тандайт', W / 2, 560, 44, C.mute, 600, 'center', seg(lt, .4, 1.2));
+  const it = [['🧂', 'Туз', 'сакталат,\nбаары керектейт'], ['🪙', 'Алтын', 'сейрек,\nбузулбайт'], ['🚬', 'Сигарет', 'кичине,\nоңой бөлүнөт']];
+  it.forEach(([e, n, dsc], i) => {
+    const y = 760 + i * 300, k = seg(lt, 1 + i * 1.4, 1.8 + i * 1.4, back);
+    card(90, y - 125, 900, 250, clamp(k * 2));
+    emoji(e, 250, y, 150, clamp(k * 2), k);
+    text(n, 400, y - 40, 60, C.gold, 800, 'left', clamp(k * 2));
+    dsc.split('\n').forEach((l, j) => text(l, 400, y + 25 + j * 46, 40, C.mute, 600, 'left', clamp(k * 2)));
+  });
+  text('Тарыхта мунун баары акча болгон', W / 2, 1560, 44, C.text, 700, 'center', seg(lt, 5.8, 6.6));
+}
+
+function sTrust(lt, d) {
+  stepTag(6, seg(lt, 0, .5));
+  title('АКЧА ДЕГЕН ЭМНЕ?', 400, seg(lt, 0, .8), C.text, 80);
+  const k0 = seg(lt, .6, 1.4, back);
+  emoji('💵', W / 2, 700, 220, clamp(k0 * 2), k0);
+  cross(W / 2, 700, 120, seg(lt, 1.6, 2.4));
+  text('жөн гана кагаз эмес', W / 2, 880, 48, C.mute, 600, 'center', seg(lt, 2, 2.8));
+  const k1 = seg(lt, 3, 3.8, back), k2 = seg(lt, 3.6, 4.4, back), k3 = seg(lt, 4.6, 5.4, back);
+  card(70, 1010, 400, 330, clamp(k1 * 2), C.green);
+  emoji('🤝', 270, 1130, 130, clamp(k1 * 2), k1);
+  text('Ишеним', 270, 1270, 52, C.green, 800, 'center', clamp(k1 * 2));
+  text('+', W / 2, 1175, 100, C.gold, 900, 'center', clamp(k2 * 2));
+  card(610, 1010, 400, 330, clamp(k2 * 2), C.gold);
+  emoji('📜', 810, 1130, 130, clamp(k2 * 2), k2);
+  text('Макулдашуу', 810, 1270, 52, C.gold, 800, 'center', clamp(k2 * 2));
+  text('=  АКЧА', W / 2, 1500, 96, C.text, 900, 'center', k3);
+}
+
+function sCTA(lt, d) {
+  const k = seg(lt, 0, .8);
+  title('Акча жок болсо да,', 480, k, C.text, 70);
+  title('ага муктаждык жоголбойт', 570, seg(lt, .4, 1.2), C.gold, 64);
+  const ek = seg(lt, 1.4, 2.2, back);
+  const pulse = 1 + Math.sin(lt * 4) * 0.04;
+  emoji('🔄', W / 2, 900, 240, clamp(ek * 2), ek * pulse);
+  title('Сен эмнени алмашмаксың?', 1150, seg(lt, 2.2, 3), C.text, 68);
+  const ck = seg(lt, 3.2, 4, back);
+  if (ck > 0) {
+    ctx.save(); ctx.translate(W / 2, 1400); ctx.scale(ck * pulse, ck * pulse);
+    rrect(-330, -70, 660, 140, 70); ctx.fillStyle = C.gold; ctx.fill(); ctx.restore();
+    text('💬 Комментарийге жаз!', W / 2, 1402, 48, '#0b1020', 800, 'center', clamp(ck * 2));
+  }
+}
+
+// ---------- subtitles ----------
+function subtitle(sc, lt) {
+  const d = sc.e - sc.s, a = Math.min(seg(lt, 0, .3), 1 - seg(lt, d - .3, d));
+  const lines = wrap(sc.sub, 900, 42, 600);
+  const lh = 56, boxH = lines.length * lh + 40, y0 = H - 140 - boxH;
+  ctx.save(); ctx.globalAlpha = a; rrect(60, y0, W - 120, boxH, 28); ctx.fillStyle = 'rgba(0,0,0,0.55)'; ctx.fill(); ctx.restore();
+  lines.forEach((l, i) => text(l, W / 2, y0 + 20 + lh / 2 + i * lh, 42, '#fff', 600, 'center', a));
+}
+
+// ---------- progress bar ----------
+function progress(t) {
+  ctx.fillStyle = 'rgba(255,255,255,0.12)'; ctx.fillRect(0, 0, W, 10);
+  ctx.fillStyle = C.gold; ctx.fillRect(0, 0, W * clamp(t / DURATION), 10);
+}
+
+function draw(t) {
+  ctx.clearRect(0, 0, W, H);
+  bg(t);
+  const sc = SCENES.find(s => t >= s.s && t < s.e) || SCENES[SCENES.length - 1];
+  const lt = t - sc.s, d = sc.e - sc.s;
+  // сценадан чыгуу/кирүү
+  const fade = Math.min(seg(lt, 0, .35), 1 - seg(lt, d - .35, d));
+  ctx.save(); ctx.globalAlpha = sc === SCENES[SCENES.length - 1] ? Math.min(1, seg(lt, 0, .35)) : fade;
+  sc.draw(lt, d); ctx.restore();
+  subtitle(sc, lt);
+  progress(t);
+}
+window.draw = draw; window.SCENES = SCENES; window.DURATION = DURATION;
+draw(0);
+</script>
+</body></html>
