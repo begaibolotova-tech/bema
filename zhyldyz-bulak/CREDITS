@@ -1,0 +1,8 @@
+«Жылдыз булак» — third-party assets
+
+Engine: Lemo-Opuscar library (github.com/lemomo-ai/lemo-opuscar), style "Crayon Picture Book":
+  gl.js, crayon.js, rig.js copied from styles/crayon-book/demo; render, events and mux tools from core/. See the library's LICENSE.
+Font: Caveat by Pablo Impallari — SIL Open Font License 1.1 (fonts/Caveat_OFL.txt), from github.com/google/fonts.
+Music and sound: original, synthesised in mix.py (no samples, no recordings).
+Voice: none (the story is told by the printed words).
+Pictures: drawn in code; no images, footage or generated imagery.

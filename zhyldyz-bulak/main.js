@@ -1,0 +1,11 @@
+import { makeComp } from './gl.js';
+import { BOIL } from './crayon.js';
+const Q = new URLSearchParams(location.search);
+const comp = makeComp(document.getElementById('gl'));
+window.DUR = 1;
+await Promise.all(['400 40px Caveat', '700 40px Caveat'].map(f => document.fonts.load(f, 'Жылдыз ңөү')));
+const M = await import('./film.js');
+window.DUR = M.DUR; window.EV = M.EV; window.SUBS = M.SUBS; window.TEXTS = M.TEXTS;
+const test = Q.get('test');
+window.render = t => { BOIL.step = Math.floor(t * 12 + 1e-6); test ? M.test(comp, t, test) : M.frame(comp, t); };
+window.READY = true;
