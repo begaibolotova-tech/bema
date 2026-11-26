@@ -3,7 +3,7 @@ import * as E from './engine.js';
 import { clamp, lerp } from '/core/lib.js';
 const cv = document.getElementById('c'), g = cv.getContext('2d');
 const { P } = E;
-window.DUR = 63.5;
+window.DUR = 64.5;
 await Promise.all(['400 40px Literata', '600 40px Literata', '500 40px Caveat', '700 40px Caveat', '400 20px "IBM Plex Mono"', '500 20px "IBM Plex Mono"'].map(f => document.fonts.load(f, 'өүңЭa0≈')));
 
 const seg = (t, a, b) => clamp((t - a) / (b - a));
@@ -153,8 +153,8 @@ function render(t) {
   E.drawPaper(g, k, { dots: .8 }); E.applyCam(g, k);
   // hook (scene 1)
   if (t < 14.4) {
-    note(t, k, 'q1', [.6, 13.8], 'Бүт адамзат', -330, -660, { size: 72, color: RED, weight: 700 });
-    note(t, k, 'q2', [1.0, 13.8], 'бир убакта секирсе?', -330, -580, { size: 72, color: RED, weight: 700 });
+    note(t, k, 'q1', [-.45, 13.8], 'Бүт адамзат', -330, -660, { size: 72, color: RED, weight: 700 });
+    note(t, k, 'q2', [-.15, 13.8], 'бир убакта секирсе?', -330, -580, { size: 72, color: RED, weight: 700 });
     note(t, k, 'n1', [5.0, 13.8], '1 чекит = 100 млн адам', -330, -400, { size: 48 });
   }
   scenePeople(t, k);
@@ -177,8 +177,49 @@ function frame(t) {
   render(toOld(t));
   for (const l of LINES) { const d = VDUR[l.id]; if (t > l.t - .4 && t < l.t + d + 1.0) vcap(t, l.t, d, l.text); }
 }
-window.render = frame;
-window.TEXTS = t => { frame(t); return TX; };
+// ---------- the 1-second cover: frame 0 is the Reel's cover; then the crowd lands and the screen shakes ----------
+const INTRO = 1.0, LAND = .62;
+const FIG = Array.from({ length: 9 }, (_, i) => ({ x: 95 + i * 111 + (i % 2) * 14, s: 1.35 + .3 * ((i * 37) % 7) / 6, ph: (i * 53 % 11) / 11 }));
+const arcY = x => 1180 + 1500 - Math.sqrt(1500 * 1500 - (x - 540) ** 2);
+function figure(x, yFeet, sc, air, t, i) {
+  const k = 1.6 * sc, sq = air > 0 ? 0 : Math.max(0, .35 * Math.sin(Math.PI * clamp((t - LAND) / .25))), hipY = yFeet - 34 * k * (1 - sq * .4);
+  const arm = air > 0 ? -1 : -.2, seed = 300 + i;
+  E.pencilStroke(g, [[x, hipY], [x, hipY - 30 * k]], { color: P.ink, width: 4, seed, passes: 1 });                      // body
+  E.pencilStroke(g, E.ringPath(x, hipY - 41 * k, 9 * k, seed, 1.02), { color: P.ink, width: 3.5, seed: seed + 1, passes: 1 });   // head
+  for (const sd of [-1, 1]) {
+    E.pencilStroke(g, [[x, hipY - 26 * k], [x + sd * 14 * k, hipY - 26 * k + arm * 22 * k]], { color: P.ink, width: 3.5, seed: seed + 2 + sd, passes: 1 });  // arms up
+    E.pencilStroke(g, [[x, hipY], [x + sd * 9 * k, hipY + 17 * k * (1 - sq)], [x + sd * 8 * k, yFeet]], { color: P.ink, width: 3.5, seed: seed + 4 + sd, passes: 1 }); // legs
+  }
+  if (air > 8) for (let j = -1; j <= 1; j++) E.pencilStroke(g, [[x + j * 10, yFeet + 14], [x + j * 10, yFeet + 14 + air * .55]], { color: P.inkSoft, width: 2, seed: seed + 9 + j, passes: 1 }); // motion lines
+}
+function cover(t) {
+  TX = [];
+  g.setTransform(1, 0, 0, 1, 0, 0); g.fillStyle = P.paper; g.fillRect(0, 0, 1080, 1920);
+  E.drawPaper(g, { x: 0, y: 0, zoom: 1, roll: 0 }, { dots: .8 });
+  const imp = t - LAND, shake = imp > 0 ? 16 * Math.exp(-imp * 9) * Math.sin(imp * 70) : 0;
+  g.setTransform(1, 0, 0, 1, shake * .6, shake);
+  // headline
+  E.setType(g, 'ЭГЕР БҮТ ДҮЙНӨ…', 540, 250, { size: 30, font: 'IBM Plex Mono', weight: 500, color: P.inkSoft, align: 'center', track: 6 });
+  E.setType(g, '8 200 000 000', 540, 420, { size: 132, font: 'Literata', weight: 600, color: P.red, align: 'center' });
+  E.setType(g, 'АДАМ БИР УБАКТА', 540, 540, { size: 78, font: 'Literata', weight: 600, color: P.ink, align: 'center' });
+  E.setType(g, 'СЕКИРСЕ?', 540, 730, { size: 196, font: 'Literata', weight: 700, color: P.ink, align: 'center' });
+  // the Earth
+  const pts = []; for (let x = -60; x <= 1140; x += 20) pts.push([x, arcY(x)]); pts.push([1140, 1980], [-60, 1980]);
+  g.save(); g.globalAlpha = .35; E.pencilStroke(g, Array.from({ length: 61 }, (_, j) => { const x = -60 + j * 20; return [x, arcY(x) - 22]; }), { color: '#8FB3C9', width: 10, seed: 40, passes: 1 }); g.restore();
+  E.inkShape(g, pts, { fill: EARTH, hatch: .35, seed: 41 });
+  if (imp > 0) for (let r = 0; r < 3; r++) { const q = clamp(imp * 2.2 - r * .25); if (q > 0 && q < 1) { g.save(); g.globalAlpha = (1 - q) * .8; E.pencilStroke(g, Array.from({ length: 41 }, (_, j) => { const x = -60 + j * 30; return [x, arcY(x) + 10 + q * 60]; }), { color: '#2B4A63', width: 3, seed: 90 + r, passes: 1 }); g.restore(); } }
+  // the crowd: in the air on frame 0, lands at LAND
+  FIG.forEach((f, i) => { const air = 190 * Math.max(0, Math.cos(Math.PI / 2 * clamp(t / LAND))) * (.8 + .4 * f.ph); figure(f.x, arcY(f.x) - air - 2, f.s, air, t, i); });
+  // the question on the Earth
+  E.handText(g, 'Жер эмне болот?', 540, 1470, { size: 92, color: '#FBF7EF', align: 'center', weight: 700 });
+  E.pencilStroke(g, E.quadPath([760, 1525], [880, 1600], [800, 1690], 16), { color: '#FBF7EF', width: 5, seed: 77 });
+  E.pencilStroke(g, [[778, 1660], [800, 1690], [826, 1668]], { color: '#FBF7EF', width: 5, seed: 78 });
+  E.setType(g, 'ЖООБУ — ВИДЕОДО', 540, 1600, { size: 30, font: 'IBM Plex Mono', weight: 500, color: '#FBF7EF', align: 'center', track: 5 });
+  g.setTransform(1, 0, 0, 1, 0, 0);
+  TX.push({ id: 'cover', text: 'cover', x0: 60, y0: 200, x1: 1020, y1: 1620, pass: true });   // a 1-second cover: not meant to be read in full here
+}
+window.render = t => t < INTRO ? cover(t) : frame(t - INTRO);
+window.TEXTS = t => { window.render(t); return TX; };
 const EV = [
   { t: T.vo1, type: 'vo', id: 'v1' }, { t: T.vo2, type: 'vo', id: 'v2' },
   { t: .6, type: 'scratch', d: 1.0 }, { t: 1.0, type: 'scratch', d: 1.2 }, { t: 5.0, type: 'scratch', d: 1.0 },
@@ -191,7 +232,8 @@ const EV = [
   { t: 55.2, type: 'tap' },
 ];
 window.EV = [
-  ...EV.filter(e => e.type !== 'vo').map(e => ({ ...e, t: toNew(e.t) })),
-  ...LINES.map(l => ({ t: l.t, type: 'vo', id: 'full/' + l.id })),
+  { t: 0, type: 'impact_in' }, { t: LAND, type: 'impact' },
+  ...EV.filter(e => e.type !== 'vo').map(e => ({ ...e, t: toNew(e.t) + INTRO })),
+  ...LINES.map(l => ({ t: l.t + INTRO, type: 'vo', id: 'full/' + l.id })),
 ];
 window.READY = true;
