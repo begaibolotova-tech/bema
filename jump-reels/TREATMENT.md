@@ -1,6 +1,6 @@
 # «Бүт адамзат бир убакта секирсе эмне болот?» — 60 s Instagram Reel, Data Storytelling
 
-Brief: Kyrgyz; 1080×1920, 30 fps; topic chosen from research (Vsauce's "What If Everyone JUMPED At Once?" had
+Brief: Kyrgyz; 1080×1920, 30 fps, 63.5 s (stretched from 60 s to fit the full narration); topic chosen from research (Vsauce's "What If Everyone JUMPED At Once?" had
 24.7 M views — the biggest confirmed number for a "what if" video we found without vidIQ). Voice: ElevenLabs
 (eleven_v3, voice «Жусуп Кыргыз»), but the account had 83 credits: hook + verdict voiced (71 credits); the
 facts are told by the chart's handwritten notes. When credits are topped up, the full narration replaces it.

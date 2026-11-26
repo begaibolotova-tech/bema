@@ -3,7 +3,7 @@ import * as E from './engine.js';
 import { clamp, lerp } from '/core/lib.js';
 const cv = document.getElementById('c'), g = cv.getContext('2d');
 const { P } = E;
-window.DUR = 60;
+window.DUR = 63.5;
 await Promise.all(['400 40px Literata', '600 40px Literata', '500 40px Caveat', '700 40px Caveat', '400 20px "IBM Plex Mono"', '500 20px "IBM Plex Mono"'].map(f => document.fonts.load(f, 'өүңЭa0≈')));
 
 const seg = (t, a, b) => clamp((t - a) / (b - a));
@@ -19,8 +19,8 @@ const BLUE = P.blue, RED = P.red, EARTH = '#8FB3C9', LAKE = '#6FA3C8';
 const T = { vo1: .4, vo2: 52.4, dots: [4.2, 12.0], merge: [14.0, 15.2], earth: [15.0, 16.4], s3: 22.6, jump: [23.6, 26.6], zoom: [27.8, 29.2], s4: 34.8, s5: 43.4 };
 const Y3 = 2300, Y4 = 4600, Y5 = 6900;
 // camera: one sheet, scrolled down scene by scene
-const cy = track([[0, 0], [13.6, 0], [15.4, 300], [21.8, 300], [T.s3, Y3], [34.0, Y3], [T.s4, Y4], [42.6, Y4], [T.s5, Y5]]);
-const cz = track([[0, 1.04], [13.6, 1.04], [15.4, .92], [21.8, .92], [T.s3, 1.0], [27.6, 1.0], [29.2, 1.1], [34.0, 1.1], [T.s4, 1.0], [42.6, 1.0], [T.s5, 1.0], [60, 1.03]]);
+const cy = track([[0, 0], [13.6, 0], [15.4, 300], [21.8, 300], [T.s3, Y3 + 150], [34.0, Y3 + 150], [T.s4, Y4], [42.6, Y4], [T.s5, Y5]]);
+const cz = track([[0, 1.04], [13.6, 1.04], [15.4, .92], [21.8, .92], [T.s3, 1.0], [34.0, 1.0], [T.s4, 1.0], [42.6, 1.0], [T.s5, 1.0], [60, 1.03]]);
 const cam = t => ({ x: 0, y: cy(t), zoom: cz(t), roll: 0 });
 
 // ---------- notes ----------
@@ -42,14 +42,14 @@ function typeLine(t, k, id, [t0, t1], text, x, y, o = {}) {
   if (p >= 1 && a > .99) { const x0 = align === 'center' ? x - w / 2 : x, [X0, Y0] = E.w2s(k, x0, y - size * .85), [X1, Y1] = E.w2s(k, x0 + w, y + size * .25); reg(id, text, X0, Y0, X1, Y1); }
 }
 function vcap(t, t0, dur, text) {
-  const ba = ss(seg(t, t0 - .3, t0)) * (1 - ss(seg(t, t0 + dur + 1.4, t0 + dur + 1.7))); if (ba <= 0) return;
-  g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = ba * .94; g.fillStyle = P.paper; g.fillRect(0, 1470, 1080, 220); g.restore();
+  const ba = ss(seg(t, t0 - .3, t0)) * (1 - ss(seg(t, t0 + dur + .6, t0 + dur + .9))); if (ba <= 0) return;
+  g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = ba * .94; g.fillStyle = P.paper; g.fillRect(0, 1440, 1080, 300); g.restore();
   const words = text.split(' '), n = words.length;
-  E.caption(g, words.map((w, i) => ({ w, t: t0 + dur * i / n })), t, { t0: t0 - .1, t1: t0 + dur + 1.4, x: 90, y: 1600, size: 50, maxW: 900, kicker: 'ҮН · ELEVENLABS' });
+  E.caption(g, words.map((w, i) => ({ w, t: t0 + dur * i / n })), t, { t0: t0 - .1, t1: t0 + dur + .6, x: 90, y: 1640, size: 42, maxW: 920, kicker: 'ҮН · ELEVENLABS' });
 }
 
 // ---------- scene 1–2: the people ----------
-const N = 82, COLS = 10, GAP = 76, GX0 = -(COLS - 1) * GAP / 2, GY0 = -230;
+const N = 82, COLS = 10, GAP = 76, GX0 = -(COLS - 1) * GAP / 2, GY0 = -290;
 const dotT = i => T.dots[0] + (T.dots[1] - T.dots[0]) * Math.sqrt(i / (N - 1));          // gaps shrink: the count accelerates
 const dotXY = i => [GX0 + (i % COLS) * GAP, GY0 + Math.floor(i / COLS) * GAP];
 const ONE = [0, 405];                                                                     // humanity as one dot, on the Earth
@@ -65,7 +65,7 @@ function scenePeople(t, k) {
   if (m >= 1) E.dataDot(g, ...ONE, 10, BLUE, { fresh: t - T.merge[1] });
   // the counter under the grid while dots land
   const n = Math.min(N, Math.max(0, Math.floor(N * Math.min(1, ((t - T.dots[0]) / (T.dots[1] - T.dots[0])) ** 2) + (t >= T.dots[1] ? N : 0))));
-  if (t > T.dots[0] && t < 14.2) { g.save(); g.globalAlpha = 1 - ss(seg(t, 13.8, 14.2)); E.setType(g, (n / 10).toFixed(1).replace('.', ',') + ' млрд', 0, 520, { size: 72, font: 'IBM Plex Mono', weight: 500, color: P.ink, align: 'center' }); g.restore(); }
+  if (t > T.dots[0] && t < 14.2) { g.save(); g.globalAlpha = 1 - ss(seg(t, 13.8, 14.2)); E.setType(g, (n / 10).toFixed(1).replace('.', ',') + ' млрд', 0, 440, { size: 72, font: 'IBM Plex Mono', weight: 500, color: P.ink, align: 'center' }); g.restore(); }
   // the Earth: a huge arc (not to scale)
   const ep = seg(t, ...T.earth);
   if (ep > 0) {
@@ -132,7 +132,7 @@ function sceneHome(t, k) {
   note(t, k, 'b2', [46.0, 60], 'кайтаруу керек: 8,2 млрд адам', x0, y2 - 120, { size: 40, color: RED });
   note(t, k, 'b3', [47.8, 60], '≈ 1,6 жыл бардык учактар менен', x0, y2 + 90, { size: 46, color: RED });
   typeLine(t, k, 'fin', [49.6, 60], 'Секирүү — 0,57 сек. Үйгө кайтуу — 1,6 жыл.', 0, Y5 + 300, { size: 38, weight: 600 });
-  typeLine(t, k, 'cta', [55.2, 60], 'ДОСУҢУЗГА ЖӨНӨТҮҢҮЗ', 0, Y5 + 380, { size: 26, font: 'IBM Plex Mono', weight: 500, color: P.inkSoft, track: 3 });
+  typeLine(t, k, 'cta', [54.0, 60], 'ДОСУҢУЗГА ЖӨНӨТҮҢҮЗ', 0, Y5 + 380, { size: 26, font: 'IBM Plex Mono', weight: 500, color: P.inkSoft, track: 3 });
 }
 
 // ---------- the pencil: follows what is being drawn ----------
@@ -167,11 +167,18 @@ function render(t) {
   sceneJump(t, k); sceneArea(t, k); sceneHome(t, k);
   g.setTransform(1, 0, 0, 1, 0, 0);
   const pen = penTip(t, k); if (pen) E.drawPencil(g, { tip: pen.tip, s: .8, lift: pen.lift, flip: pen.flip || 0 });
-  vcap(t, T.vo1 + .1, 2.6, 'Бүт адамзат бир убакта секирсе эмне болот?');
-  vcap(t, T.vo2 + .1, 1.7, 'Жер муну байкабай да калат.');
 }
-window.render = render;
-window.TEXTS = t => { render(t); return TX; };
+// the narration (ElevenLabs, 10 lines) sets the pace: the picture's timeline (old, 0–60 s) is warped onto film time
+const LINES = await (await fetch('voices/full/lines.json')).json(), VDUR = await (await fetch('voices/full/dur.json')).json();
+const WARP = [[0, 0], [12.5, 12.5], [13.5, 14.0], [22.1, 22.6], [26.9, 26.6], [31.2, 27.8], [37.8, 34.0], [47.2, 43.4], [58.6, 52.4], [63.5, 60.0]];
+const pw = (K, a, b) => x => { for (let i = 0; i < K.length - 1; i++) if (x <= K[i + 1][a] || i === K.length - 2) return lerp(K[i][b], K[i + 1][b], clamp((x - K[i][a]) / (K[i + 1][a] - K[i][a]))); };
+const toOld = pw(WARP, 0, 1), toNew = pw(WARP, 1, 0);
+function frame(t) {
+  render(toOld(t));
+  for (const l of LINES) { const d = VDUR[l.id]; if (t > l.t - .4 && t < l.t + d + 1.0) vcap(t, l.t, d, l.text); }
+}
+window.render = frame;
+window.TEXTS = t => { frame(t); return TX; };
 const EV = [
   { t: T.vo1, type: 'vo', id: 'v1' }, { t: T.vo2, type: 'vo', id: 'v2' },
   { t: .6, type: 'scratch', d: 1.0 }, { t: 1.0, type: 'scratch', d: 1.2 }, { t: 5.0, type: 'scratch', d: 1.0 },
@@ -183,5 +190,8 @@ const EV = [
   { t: 44.4, type: 'ruler', d: 1.0 }, { t: 46.0, type: 'ruler', d: 1.2 }, { t: 47.8, type: 'scratch', d: 1.2 },
   { t: 55.2, type: 'tap' },
 ];
-window.EV = EV;
+window.EV = [
+  ...EV.filter(e => e.type !== 'vo').map(e => ({ ...e, t: toNew(e.t) })),
+  ...LINES.map(l => ({ t: l.t, type: 'vo', id: 'full/' + l.id })),
+];
 window.READY = true;

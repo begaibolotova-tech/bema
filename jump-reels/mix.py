@@ -12,7 +12,7 @@ IRn = int(1.2 * SR); IR = np.stack([lp(noise(IRn), 6000), lp(noise(IRn), 6000)],
 def verb(x, wet): return x * (1 - wet) + np.stack([fftconvolve(x[:, c], IR[:, c])[:len(x)] for c in (0, 1)], 1) * wet
 hz = lambda m: 440 * 2 ** ((m - 69) / 12)
 mus = np.zeros((N, 2)); sfx = np.zeros((N, 2)); vo = np.zeros((N, 2)); duck = np.zeros(N)
-SIL = (26.8, 27.8)                       # true silence before the ×10¹³ reveal
+SIL = (30.45, 31.2)                       # true silence before the ×10¹³ reveal
 # ---- bed: 96 bpm, soft kick + shaker + detuned pad, Am – F – C – G ----
 B = 60 / 96
 def kick(v): d = .35; t = np.arange(int(d * SR)) / SR; return np.sin(2 * np.pi * np.cumsum(50 + 70 * np.exp(-t * 30)) / SR) * np.exp(-t * 9) * v
@@ -33,10 +33,10 @@ def section(t0, t1, kv=.5, sv=.12, pv=.05, dark=False):
             for h in (.5,):
                 if tb + h * B < t1 - .05 and sv: add(mus, shaker(sv), tb + h * B, 1, .3)
         t += bar; i += 1
-section(3.4, 13.9, .35, .08, .045); section(15.0, SIL[0], .45, .1, .045)
-section(SIL[1], 43.2, .5, .12, .05)
-section(43.2, 51.8, .35, .08, .045, dark=True)
-section(54.6, 59.5, .4, .1, .05)
+section(3.4, 13.4, .35, .08, .045); section(14.5, SIL[0], .45, .1, .045)
+section(SIL[1], 47.0, .5, .12, .05)
+section(47.0, 58.4, .35, .08, .045, dark=True)
+section(59.0, 63.0, .4, .1, .05)
 # ---- sonification: plonk, pitch = height (pentatonic), wood -> metal with height ----
 PENT = [0, 2, 4, 7, 9]
 def plonk(h, v=.5, blue=False):
@@ -77,7 +77,7 @@ for e in ev['ev']:
     elif ty == 'sweep': n = int(e['d'] * SR); x = bp(pink(n), 400, 4000) * np.sin(np.pi * np.arange(n) / n); add(sfx, norm(x, .25), t0, 1, 0)
     elif ty == 'boing':
         for r in range(1):
-            tb = t0 + .3; d = 1.71; n = int(d * SR); tt = np.arange(n) / SR      # chart: 1 s of jump drawn over 3 s
+            tb = t0 + .36; d = 2.05; n = int(d * SR); tt = np.arange(n) / SR      # chart: 1 s of jump drawn over 3 s
             add(sfx, np.sin(2 * np.pi * np.cumsum(220 + 260 * np.sin(np.pi * tt / d)) / SR) * np.sin(np.pi * tt / d) * .18, tb, 1, 0)
             add(sfx, hit() * .35, tb + d, 1, 0)
     elif ty == 'thud': pass
@@ -91,7 +91,7 @@ mr = np.sqrt(np.mean(mus[~act] ** 2)) + 1e-9; v *= mr * 10 ** (10 / 20) / (np.sq
 mus *= (1 - .72 * dl)[:, None]
 mix = mus + sfx + np.stack([v, v], 1)
 i0, i1 = int(SIL[0] * SR), int(SIL[1] * SR); mix[i0:i1] = 0          # true digital silence
-mix[int(59.3 * SR):] *= np.linspace(1, 0, N - int(59.3 * SR))[:, None]
+mix[int(62.8 * SR):] *= np.linspace(1, 0, N - int(62.8 * SR))[:, None]
 mix = np.stack([limit(mix[:, c], .9) for c in (0, 1)], 1)
 os.makedirs(os.path.join(HERE, 'out'), exist_ok=True)
 sf.write(os.path.join(HERE, 'out', 'mix.wav'), (mix / np.abs(mix).max() * .89).astype(np.float32), SR, subtype='FLOAT'); print('mix ok')
