@@ -1,0 +1,7 @@
+«Одуванчик» — credits
+Fonts (SIL Open Font License 1.1, via Google Fonts, self-hosted in fonts/):
+  Cormorant Garamond — Christian Thalmann
+  Caveat — Impallari Type
+  IBM Plex Mono — IBM
+Music and sound: synthesised for this film in code (numpy/scipy), no samples.
+Picture: drawn entirely in code; stroke engine adapted from the Lemo-Opuscar Watercolor Brush style (see the library's LICENSE).
