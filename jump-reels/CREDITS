@@ -1,0 +1,7 @@
+«Бүт адамзат бир убакта секирсе эмне болот?» — credits
+Voice: ElevenLabs (eleven_v3), voice "Жусуп Кыргыз" (ElevenLabs voice library), generated on the user's ElevenLabs account.
+Fonts (SIL Open Font License 1.1, via Google Fonts, self-hosted in fonts/): Literata (TypeTogether), Caveat (Impallari Type),
+  IBM Plex Mono (IBM).
+Music and sound effects: synthesised in code (numpy/scipy), no samples.
+Chart engine: adapted from the Lemo-Opuscar "Data Storytelling" style (see the library's LICENSE).
+Data: see FACTS.md.
