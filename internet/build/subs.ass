@@ -1,0 +1,39 @@
+[Script Info]
+ScriptType: v4.00+
+PlayResX: 1080
+PlayResY: 1920
+WrapStyle: 0
+ScaledBorderAndShadow: yes
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: Cap,Inter Black,72,&H00FFFFFF,&H00FFFFFF,&H00000000,&H96000000,0,0,0,0,100,100,1,0,1,7,4,5,80,80,0,1
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+Dialogue: 0,0:00:04.13,0:00:05.61,Cap,,0,0,0,,{\pos(540,1555)\fscx82\fscy82\t(0,110,\fscx106\fscy106)\t(110,190,\fscx100\fscy100)}СЕН {\c&H00D4FF&}ЭМНЕ КЫЛАСЫҢ?{\c&HFFFFFF&}
+Dialogue: 0,0:00:06.34,0:00:06.77,Cap,,0,0,0,,{\pos(540,1555)\fscx82\fscy82\t(0,110,\fscx106\fscy106)\t(110,190,\fscx100\fscy100)}{\c&H4646FF&}1-КҮН.{\c&HFFFFFF&}
+Dialogue: 0,0:00:06.77,0:00:08.99,Cap,,0,0,0,,{\pos(540,1555)\fscx82\fscy82\t(0,110,\fscx106\fscy106)\t(110,190,\fscx100\fscy100)}WHATSAPP, TELEGRAM, INSTAGRAM —
+Dialogue: 0,0:00:08.99,0:00:10.49,Cap,,0,0,0,,{\pos(540,1555)\fscx82\fscy82\t(0,110,\fscx106\fscy106)\t(110,190,\fscx100\fscy100)}БААРЫ {\c&H4646FF&}УНЧУКПАЙ КАЛАТ.{\c&HFFFFFF&}
+Dialogue: 0,0:00:10.49,0:00:12.71,Cap,,0,0,0,,{\pos(540,1555)\fscx82\fscy82\t(0,110,\fscx106\fscy106)\t(110,190,\fscx100\fscy100)}ДҮЙНӨДӨ {\c&H00D4FF&}ДЭЭРЛИК 6 МИЛЛИАРД{\c&HFFFFFF&} АДАМ
+Dialogue: 0,0:00:12.71,0:00:15.21,Cap,,0,0,0,,{\pos(540,1555)\fscx82\fscy82\t(0,110,\fscx106\fscy106)\t(110,190,\fscx100\fscy100)}БИР ЗАМАТТА {\c&H4646FF&}БАЙЛАНЫШСЫЗ{\c&HFFFFFF&} КАЛАТ.
+Dialogue: 0,0:00:15.94,0:00:16.37,Cap,,0,0,0,,{\pos(540,1555)\fscx82\fscy82\t(0,110,\fscx106\fscy106)\t(110,190,\fscx100\fscy100)}{\c&H4646FF&}2-КҮН.{\c&HFFFFFF&}
+Dialogue: 0,0:00:16.37,0:00:18.28,Cap,,0,0,0,,{\pos(540,1555)\fscx82\fscy82\t(0,110,\fscx106\fscy106)\t(110,190,\fscx100\fscy100)}КАРТА МЕНЕН {\c&H4646FF&}ТӨЛӨЙ АЛБАЙСЫҢ,{\c&HFFFFFF&}
+Dialogue: 0,0:00:18.28,0:00:19.85,Cap,,0,0,0,,{\pos(540,1555)\fscx82\fscy82\t(0,110,\fscx106\fscy106)\t(110,190,\fscx100\fscy100)}ТАКСИ {\c&H4646FF&}ЧАКЫРА АЛБАЙСЫҢ.{\c&HFFFFFF&}
+Dialogue: 0,0:00:19.85,0:00:22.55,Cap,,0,0,0,,{\pos(540,1555)\fscx82\fscy82\t(0,110,\fscx106\fscy106)\t(110,190,\fscx100\fscy100)}ДҮКӨНДӨРДӨ ЖАНА БАНКОМАТТАРДЫН АЛДЫНДА
+Dialogue: 0,0:00:22.55,0:00:23.68,Cap,,0,0,0,,{\pos(540,1555)\fscx82\fscy82\t(0,110,\fscx106\fscy106)\t(110,190,\fscx100\fscy100)}{\c&H00D4FF&}УЗУН КЕЗЕК.{\c&HFFFFFF&}
+Dialogue: 0,0:00:24.41,0:00:25.78,Cap,,0,0,0,,{\pos(540,1555)\fscx82\fscy82\t(0,110,\fscx106\fscy106)\t(110,190,\fscx100\fscy100)}{\c&H4646FF&}3-КҮН.{\c&HFFFFFF&} ЭСИҢДЕБИ,
+Dialogue: 0,0:00:25.78,0:00:27.33,Cap,,0,0,0,,{\pos(540,1555)\fscx82\fscy82\t(0,110,\fscx106\fscy106)\t(110,190,\fscx100\fscy100)}{\c&HFFD640&}2021-ЖЫЛЫ{\c&HFFFFFF&} FACEBOOK
+Dialogue: 0,0:00:27.33,0:00:29.47,Cap,,0,0,0,,{\pos(540,1555)\fscx82\fscy82\t(0,110,\fscx106\fscy106)\t(110,190,\fscx100\fscy100)}БОЛГОНУ {\c&HFFD640&}6 СААТКА{\c&HFFFFFF&} ӨЧКӨНДӨ,
+Dialogue: 0,0:00:29.47,0:00:32.48,Cap,,0,0,0,,{\pos(540,1555)\fscx82\fscy82\t(0,110,\fscx106\fscy106)\t(110,190,\fscx100\fscy100)}{\c&H00D4FF&}3 МИЛЛИАРД{\c&HFFFFFF&} АДАМ БАЙЛАНЫШСЫЗ КАЛГАН.
+Dialogue: 0,0:00:32.48,0:00:34.71,Cap,,0,0,0,,{\pos(540,1555)\fscx82\fscy82\t(0,110,\fscx106\fscy106)\t(110,190,\fscx100\fscy100)}АЛ ЭМИ БУЛ — {\c&H4646FF&}БИР ЖУМА!{\c&HFFFFFF&}
+Dialogue: 0,0:00:35.45,0:00:37.56,Cap,,0,0,0,,{\pos(540,1555)\fscx82\fscy82\t(0,110,\fscx106\fscy106)\t(110,190,\fscx100\fscy100)}{\c&H4646FF&}4-КҮН.{\c&HFFFFFF&} БИРОК {\c&H82E63C&}ЖАКШЫ ЖАГЫ{\c&HFFFFFF&} ДА БАР:
+Dialogue: 0,0:00:37.56,0:00:39.81,Cap,,0,0,0,,{\pos(540,1555)\fscx82\fscy82\t(0,110,\fscx106\fscy106)\t(110,190,\fscx100\fscy100)}ТАЕНЕҢЕ ЧАЛБАЙ ЭЛЕ, {\c&H82E63C&}ӨЗҮҢ БАРАСЫҢ.{\c&HFFFFFF&}
+Dialogue: 0,0:00:39.81,0:00:42.40,Cap,,0,0,0,,{\pos(540,1555)\fscx82\fscy82\t(0,110,\fscx106\fscy106)\t(110,190,\fscx100\fscy100)}ҮЙДӨ {\c&H82E63C&}ЧАЙ ДА, СҮЙЛӨШҮҮ ДА{\c&HFFFFFF&} КӨБӨЙӨТ.
+Dialogue: 0,0:00:43.14,0:00:45.83,Cap,,0,0,0,,{\pos(540,1555)\fscx82\fscy82\t(0,110,\fscx106\fscy106)\t(110,190,\fscx100\fscy100)}{\c&H4646FF&}5-КҮН.{\c&HFFFFFF&} ЖАҢЫЛЫКТЫ {\c&H00D4FF&}РАДИОДОН{\c&HFFFFFF&} УГАСЫҢ,
+Dialogue: 0,0:00:45.83,0:00:47.46,Cap,,0,0,0,,{\pos(540,1555)\fscx82\fscy82\t(0,110,\fscx106\fscy106)\t(110,190,\fscx100\fscy100)}ЖОЛДУ КАРТАДАН ЭМЕС,
+Dialogue: 0,0:00:47.46,0:00:49.44,Cap,,0,0,0,,{\pos(540,1555)\fscx82\fscy82\t(0,110,\fscx106\fscy106)\t(110,190,\fscx100\fscy100)}{\c&H00D4FF&}КОШУНАҢДАН{\c&HFFFFFF&} СУРАЙСЫҢ.
+Dialogue: 0,0:00:50.17,0:00:52.36,Cap,,0,0,0,,{\pos(540,1555)\fscx82\fscy82\t(0,110,\fscx106\fscy106)\t(110,190,\fscx100\fscy100)}{\c&H82E63C&}7-КҮНҮ{\c&HFFFFFF&} ИНТЕРНЕТ КАЙТЫП КЕЛЕТ...
+Dialogue: 0,0:00:52.36,0:00:54.55,Cap,,0,0,0,,{\pos(540,1555)\fscx82\fscy82\t(0,110,\fscx106\fscy106)\t(110,190,\fscx100\fscy100)}ЖАНА САГА {\c&H82E63C&}3 000 БИЛДИРҮҮ{\c&HFFFFFF&} КЕЛЕТ!
+Dialogue: 0,0:00:54.55,0:00:56.53,Cap,,0,0,0,,{\pos(540,1555)\fscx82\fscy82\t(0,110,\fscx106\fscy106)\t(110,190,\fscx100\fscy100)}СЕН {\c&H00D4FF&}БИР ЖУМА{\c&HFFFFFF&} ЧЫДАЙ АЛАСЫҢБЫ?
+Dialogue: 0,0:00:56.53,0:00:59.90,Cap,,0,0,0,,{\pos(540,1555)\fscx82\fscy82\t(0,110,\fscx106\fscy106)\t(110,190,\fscx100\fscy100)}{\c&H00D4FF&}КОММЕНТАРИЙГЕ{\c&HFFFFFF&} ЖАЗ!
