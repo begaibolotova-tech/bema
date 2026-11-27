@@ -36,5 +36,11 @@ ffmpeg -v error -y -i $B/vo.wav -i $B/vo.wav -i $MUSIC -i $WHOOSH -i $B/sfx_off.
 ffmpeg -v error -y -i $B/visual.mp4 -i $B/mix.wav \
   -vf "ass=$B/subs.ass:fontsdir=/usr/share/fonts/opentype/inter" -map 0:v -map 1:a -t 60 \
   -c:v libx264 -preset slow -b:v 9000k -maxrate 12M -bufsize 20M -pix_fmt yuv420p \
-  -c:a aac -b:a 192k -movflags +faststart INTERNET_7_KUN_60s_1080x1920.mp4
+  -c:a aac -b:a 192k -movflags +faststart $B/nocover.mp4
+
+# cover as the first 0.5 s (Instagram shows it as the thumbnail), then fades into the hook
+ffmpeg -v error -y -i $B/nocover.mp4 -loop 1 -t 0.8 -i COVER_internet_1080x1920.jpg -filter_complex "
+  [1]format=rgba,scale=1080:1920,fade=t=out:st=0.45:d=0.3:alpha=1,setpts=PTS-STARTPTS[c];
+  [0][c]overlay=0:0:eof_action=pass[v]" -map "[v]" -map 0:a -c:v libx264 -preset slow -b:v 9000k -maxrate 12M \
+  -bufsize 20M -pix_fmt yuv420p -c:a copy -movflags +faststart INTERNET_7_KUN_60s_1080x1920.mp4
 ffprobe -v error -show_entries format=duration:stream=codec_name,width,height -of compact INTERNET_7_KUN_60s_1080x1920.mp4
