@@ -1,0 +1,20 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>
+@font-face { font-family: "Inter Display Black"; src: url(fonts/InterDisplay-Black.otf); }
+@font-face { font-family: "Inter"; src: url(fonts/Inter-Bold.otf); font-weight: 700; }
+@font-face { font-family: "JetBrains Mono"; src: url(fonts/JetBrainsMono-Medium.ttf); font-weight: 500; }
+@font-face { font-family: "JetBrains Mono"; src: url(fonts/JetBrainsMono-Bold.ttf); font-weight: 700; }
+html,body { margin:0; background:#000; overflow:hidden; }
+canvas { display:block; width:1080px; height:1920px; }
+</style></head>
+<body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script src="engine.js"></script>
+<script src="film.js"></script>
+<script>
+const sample = 'ЖИ МЕНЕН ҢңӨөҮү«»›⇄— 0123456789 AaКы';
+Promise.all(['40px "Inter Display Black"', '700 40px "Inter"', '500 20px "JetBrains Mono"', '700 20px "JetBrains Mono"']
+  .map((f) => document.fonts.load(f, sample))).then(() => { render(0); window.READY = true; });
+</script>
+</body></html>
